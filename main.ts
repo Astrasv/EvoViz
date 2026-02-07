@@ -3,10 +3,7 @@ import { initGA, stepGA } from './algorithms/ga';
 import { initDE, stepDE } from './algorithms/de';
 import { initES, stepES } from './algorithms/es';
 import { initPSO, stepPSO } from './algorithms/pso';
-
-
-// GP is currently empty/not implemented
-// import { initGP, stepGP } from './algorithms/gp'; 
+import { initGP, stepGP } from './algorithms/gp';
 
 import { StepLog } from './utils/internal-algo-logs';
 
@@ -88,6 +85,7 @@ const main = () => {
         { name: 'Differential Evolution (DE)', init: initDE, step: stepDE },
         { name: 'Evolution Strategy (ES)', init: initES, step: stepES },
         { name: 'Particle Swarm Optimization (PSO)', init: initPSO, step: stepPSO },
+        { name: 'Genetic Programming (GP)', init: initGP, step: stepGP },
     ];
 
 
