@@ -33,6 +33,9 @@ export interface EAConfig {
   knapsackItems: KnapsackItem[];
   knapsackCapacity: number;
   
+  // GA Specific
+  tournamentSize: number;
+
   // GP Specific
   gpProblem: 'Linear' | 'Sine';
   gpOperations: GPOperation[];
@@ -50,6 +53,7 @@ export const DEFAULT_CONFIG: EAConfig = {
   sigma: 1.0,
   knapsackItems: DEFAULT_KNAPSACK_ITEMS,
   knapsackCapacity: DEFAULT_CAPACITY,
+  tournamentSize: 3,
   gpProblem: 'Linear',
   gpOperations: DEFAULT_GP_LINEAR_OPS
 };

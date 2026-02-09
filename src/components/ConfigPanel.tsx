@@ -175,6 +175,18 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
                         className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
                     />
                 </div>
+                {algo === 'GA' && (
+                    <div className="space-y-2">
+                        <label className="block text-xs font-semibold text-slate-500 uppercase">Tournament Size</label>
+                        <input 
+                            type="number" 
+                            value={config.tournamentSize}
+                            disabled={disabled}
+                            onChange={(e) => handleChange('tournamentSize', parseInt(e.target.value))}
+                            className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        />
+                    </div>
+                )}
             </>
         )}
 

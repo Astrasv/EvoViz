@@ -29,15 +29,19 @@ export const stepGA = (pop: Population, config: EAConfig): { nextPop: Population
   const logs: GALogEntry[] = [];
 
   while (nextPop.length < config.populationSize) {
-    const p1 = tournament(pop, config.populationSize);
-    const p2 = tournament(pop, config.populationSize);
+    const p1 = tournament(pop, config.tournamentSize);
+    const p2 = tournament(pop, config.tournamentSize);
 
-    // Ensure at least 1 gene to cut
-    const crossoverPoint = geneLen > 1 ? randomInt(1, geneLen - 1) : 0;
-    
-    const child1Genes = [...p1.genes.slice(0, crossoverPoint), ...p2.genes.slice(crossoverPoint)];
-    const child2Genes = [...p2.genes.slice(0, crossoverPoint), ...p1.genes.slice(crossoverPoint)];
-    
+    let child1Genes = [...p1.genes];
+    let child2Genes = [...p2.genes];
+    let crossoverPoint = 0;
+
+    // Check Crossover Rate
+    if (geneLen > 1 && Math.random() < config.crossoverRate) {
+        crossoverPoint = randomInt(1, geneLen - 1);
+        child1Genes = [...p1.genes.slice(0, crossoverPoint), ...p2.genes.slice(crossoverPoint)];
+        child2Genes = [...p2.genes.slice(0, crossoverPoint), ...p1.genes.slice(crossoverPoint)];
+    }
 
     const { fitness: f1 } = processChild(child1Genes, config, p1.id, p2.id, crossoverPoint, nextPop.length, logs);
     nextPop.push({ id: nextPop.length, genes: child1Genes, fitness: f1 });
@@ -87,9 +91,15 @@ const processChild = (
     return { fitness, weight, isValid };
 };
 
-const tournament = (pop: Population, size: number): Individual => {
-  const i1 = randomInt(0, size - 1);
-  const i2 = randomInt(0, size - 1);
-  // choose higher fitness coz maxim
-  return pop[i1].fitness > pop[i2].fitness ? pop[i1] : pop[i2];
+const tournament = (pop: Population, tournamentSize: number): Individual => {
+  let best = pop[randomInt(0, pop.length - 1)];
+  
+  for (let i = 1; i < tournamentSize; i++) {
+      const challenger = pop[randomInt(0, pop.length - 1)];
+      if (challenger.fitness > best.fitness) {
+          best = challenger;
+      }
+  }
+  
+  return best;
 };
