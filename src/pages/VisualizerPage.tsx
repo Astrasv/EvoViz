@@ -41,6 +41,25 @@ const VisualizerPage: React.FC = () => {
     const [scatter2DMaximized, setScatter2DMaximized] = useState(false);
     const [scatter3DMaximized, setScatter3DMaximized] = useState(false);
 
+    // Enforce 2D genome for algorithms using 3D visualization to match plot dimensions
+    useEffect(() => {
+        setConfig(prev => {
+            const is3DViz = algo === 'DE' || algo === 'PSO' || algo === 'ES' || (algo === 'GP' && prev.gpProblem === 'Linear');
+            
+            let targetGenes = prev.genesCount;
+            if (is3DViz) {
+                targetGenes = 2;
+            } else if (algo === 'GP' && prev.gpProblem === 'Sine') {
+                targetGenes = 5;
+            }
+            
+            if (prev.genesCount !== targetGenes) {
+                return { ...prev, genesCount: targetGenes };
+            }
+            return prev;
+        });
+    }, [algo, config.gpProblem]);
+
     // Initialize function
     const reset = useCallback(() => {
         let initialPop: Population = [];

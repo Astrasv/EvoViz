@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, Cell, ReferenceLine } from 'recharts';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { Individual, EAConfig } from '../utils/common';
 import { evaluateGP } from '../utils/functions';
@@ -39,12 +39,34 @@ const Visualizer: React.FC<Props> = ({
   const isKnapsack = algo === 'GA';
   const isGPSine = algo === 'GP' && config.gpProblem === 'Sine';
   
-  const scatterData = currentPop.map(p => ({ 
-      x: p.genes[0], 
-      y: p.genes[1], 
-      z: p.fitness,
-      id: p.id
-  }));
+  const scatterData = useMemo(() => {
+    if (isKnapsack) {
+        return currentPop.map(p => {
+            let totalWeight = 0;
+            let totalValue = 0;
+            p.genes.forEach((g, i) => {
+                if (g === 1 && config.knapsackItems[i]) {
+                    totalWeight += config.knapsackItems[i].weight;
+                    totalValue += config.knapsackItems[i].value;
+                }
+            });
+            return {
+                x: totalWeight,
+                y: totalValue,
+                z: p.fitness,
+                id: p.id,
+                isValid: totalWeight <= config.knapsackCapacity
+            };
+        });
+    }
+
+    return currentPop.map(p => ({ 
+        x: p.genes[0], 
+        y: p.genes[1], 
+        z: p.fitness,
+        id: p.id
+    }));
+  }, [currentPop, isKnapsack, config]);
 
   // Generate sine wave data for GP Sine
   const sineData = useMemo(() => {
@@ -124,7 +146,7 @@ const Visualizer: React.FC<Props> = ({
               </button>
             )}
             <h3 className="text-xs uppercase text-slate-400 mb-2">
-              {isGPSine ? 'Function Fit (Target vs Best)' : '2D Projection (Gene 0 vs Gene 1)'}
+                {isGPSine ? 'Function Fit (Target vs Best)' : (isKnapsack ? 'Knapsack State (Weight vs Value)' : '2D Projection (Gene 0 vs Gene 1)')}
             </h3>
             <div style={{ width: '100%', height: '85%' }}>
               <ResponsiveContainer>
@@ -141,20 +163,29 @@ const Visualizer: React.FC<Props> = ({
                   <ScatterChart>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis 
-                      type="number" dataKey="x" name="Gene 0" stroke="#94a3b8" 
-                      domain={isKnapsack ? [-0.5, 1.5] : [-6, 6]} 
-                      allowDecimals={true} 
+                        type="number" dataKey="x" 
+                        name={isKnapsack ? "Total Weight" : "Gene 0"} 
+                        stroke="#94a3b8" 
+                        domain={isKnapsack ? [0, 'auto'] : [-6, 6]} 
+                        allowDecimals={true} 
+                        label={isKnapsack ? { value: 'Total Weight', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 10 } : undefined}
                     />
                     <YAxis 
-                      type="number" dataKey="y" name="Gene 1" stroke="#94a3b8" 
-                      domain={isKnapsack ? [-0.5, 1.5] : [-6, 6]} 
-                      allowDecimals={true} 
+                        type="number" dataKey="y" 
+                        name={isKnapsack ? "Total Value" : "Gene 1"} 
+                        stroke="#94a3b8" 
+                        domain={isKnapsack ? [0, 'auto'] : [-6, 6]} 
+                        allowDecimals={true} 
+                        label={isKnapsack ? { value: 'Total Value', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 } : undefined}
                     />
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
-                    <Scatter name="Population" data={scatterData} fill="#ffffff" stroke="#000000" strokeWidth={1.5}>
-                      {scatterData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={isKnapsack ? (entry.z > 0 ? '#10b981' : '#ef4444') : '#ffffff'} stroke={isKnapsack ? (entry.z > 0 ? '#10b981' : '#ef4444') : '#000000'} strokeWidth={1.5} />
-                      ))}
+                    {isKnapsack && (
+                        <ReferenceLine x={config.knapsackCapacity} stroke="#ef4444" strokeDasharray="3 3" label={{ value: 'Max Cap', fill: '#ef4444', position: 'insideTopRight', fontSize: 10 }} />
+                    )}
+                    <Scatter name="Population" data={scatterData} fill="#f472b6">
+                        {scatterData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={isKnapsack ? (entry.x <= config.knapsackCapacity ? '#10b981' : '#ef4444') : '#f472b6'} />
+                        ))}
                     </Scatter>
                   </ScatterChart>
                 )}

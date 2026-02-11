@@ -49,7 +49,7 @@ export interface EAConfig {
 
 export const DEFAULT_CONFIG: EAConfig = {
   populationSize: 10,
-  genesCount: 5,
+  genesCount: 2,
   maxGenerations: 10,
   mutationRate: 0.1,
   crossoverRate: 0.8,
