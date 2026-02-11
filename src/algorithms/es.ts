@@ -15,17 +15,22 @@ export const initES = (config: EAConfig): Population => {
 };
 
 export const stepES = (pop: Population, config: EAConfig): { nextPop: Population; logs: StepLog } => {
-  // (mu + mu) Strategy:
-  // generate mu children from current mu parents (1-to-1)
-  // Pool = 2*mu
+  // (mu + lambda) Strategy:
+  // generate lambda children from current mu parents (random selection)
+  // Pool = mu + lambda
   // Select best mu
   
   const children: Individual[] = [];
   const logs: ESLogEntry[] = [];
   const calcFitness = config.problemType === 'Ackley' ? calcAckleyFitness : calcSphereFitness;
   
-  //  mutate only for canonical simple ES
-  pop.forEach((parent, i) => {
+  const lambda = config.offspringSize ?? config.populationSize; // Default to mu if not set
+  
+  for (let i = 0; i < lambda; i++) {
+      // Randomly select a parent
+      const parentIdx = randomInt(0, pop.length - 1);
+      const parent = pop[parentIdx];
+
       const noiseVec: number[] = [];
       const childGenes = parent.genes.map(g => {
           const sigma = config.sigma ?? 1.0;
@@ -41,15 +46,17 @@ export const stepES = (pop: Population, config: EAConfig): { nextPop: Population
 
       const childFitness = calcFitness(childGenes);
       
+      const childId = config.populationSize + i; // Temporary ID: start after last parent
+
       children.push({
-          id: config.populationSize + i, // Temporary ID
+          id: childId,
           genes: childGenes,
           fitness: childFitness
       });
 
       // Prepare partial log - survival status known after sorting
       logs.push({
-          id: config.populationSize + i,
+          id: childId,
           parentId: parent.id,
           parentGenes: [...parent.genes],
           parentFitness: parent.fitness,
@@ -59,7 +66,7 @@ export const stepES = (pop: Population, config: EAConfig): { nextPop: Population
           isChildSurvivor: false, // Updated later
           isParentSurvivor: false // Updated later
       });
-  });
+  }
 
   const pool = [...pop, ...children];
   pool.sort((a, b) => a.fitness - b.fitness);

@@ -43,6 +43,9 @@ export interface EAConfig {
   // DE Specific
   F: number;
 
+  // ES Specific
+  offspringSize: number;
+
   // Real-valued Optimization (DE, PSO, ES)
   problemType: 'Sphere' | 'Ackley';
 }
@@ -58,6 +61,7 @@ export const DEFAULT_CONFIG: EAConfig = {
   c2: 1.4,
   sigma: 1.0,
   F: 0.5,
+  offspringSize: 20,
   knapsackItems: DEFAULT_KNAPSACK_ITEMS,
   knapsackCapacity: DEFAULT_CAPACITY,
   tournamentSize: 3,

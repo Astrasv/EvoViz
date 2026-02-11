@@ -37,7 +37,8 @@ const Visualizer: React.FC<Props> = ({
   onToggleScatter3D
 }) => {
   const isKnapsack = algo === 'GA';
-  const isGPSine = algo === 'GP' && config.gpProblem === 'Sine';
+  const isGP = algo === 'GP';
+  const isGPSine = isGP && config.gpProblem === 'Sine';
   
   const scatterData = useMemo(() => {
     if (isKnapsack) {
@@ -86,7 +87,7 @@ const Visualizer: React.FC<Props> = ({
       return data;
   }, [currentPop, isGPSine, config]);
 
-  const isRealValued = !isKnapsack && !isGPSine;
+  const isRealValued = !isKnapsack && !isGP;
 
   // Grid layout - always use same column count
   const gridCols = isRealValued ? 'xl:grid-cols-3 lg:grid-cols-2' : 'lg:grid-cols-2';

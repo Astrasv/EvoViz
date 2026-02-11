@@ -102,7 +102,9 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
       <div className="grid grid-cols-2 gap-4">
         {/* General Settings */}
         <div className="col-span-2 space-y-2">
-            <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Population Size</label>
+            <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>
+                {algo === 'ES' ? 'Parent Size (μ)' : 'Population Size'}
+            </label>
             <input 
                 type="number" 
                 value={config.populationSize}
@@ -364,7 +366,21 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
                     <p className={`text-xs mb-2 font-bold ${disabled ? 'text-fuchsia-400/50' : 'text-fuchsia-400'}`}>ES Parameters</p>
                 </div>
                 <div className="space-y-2">
-                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Sigma (Mutation Step)</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Offspring Size (λ)</label>
+                    <input 
+                        type="number" 
+                        value={config.offspringSize}
+                        disabled={disabled}
+                        onChange={(e) => handleChange('offspringSize', parseInt(e.target.value))}
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Sigma</label>
                     <input 
                         type="number" step="0.1"
                         value={config.sigma}

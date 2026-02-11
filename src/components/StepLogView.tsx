@@ -178,13 +178,14 @@ const ESLogTable: React.FC<{logs: ESLogEntry[]}> = ({ logs }) => (
                    </td>
                    <td className="px-3 py-2">
                         <div className="text-fuchsia-400">C#{log.id + 1}</div>
+                        <div className="text-[10px] text-slate-400">[{log.childGenes.map(g => g.toFixed(1)).join(',')}]</div>
                         <div className={`text-[10px] ${log.isChildSurvivor ? 'text-green-400 font-bold' : 'text-slate-500'}`}>Fit: {log.childFitness.toFixed(2)}</div>
                    </td>
                    <td className="px-3 py-2">
-                        {log.isParentSurvivor && log.isChildSurvivor && <span className="text-slate-300">Both</span>}
-                        {log.isParentSurvivor && !log.isChildSurvivor && <span className="text-slate-500">Parent</span>}
-                        {!log.isParentSurvivor && log.isChildSurvivor && <span className="text-green-400 font-bold">Child Replaces</span>}
-                        {!log.isParentSurvivor && !log.isChildSurvivor && <span className="text-red-900">None (Outcompeted)</span>}
+                        {log.isParentSurvivor && log.isChildSurvivor && <span className="text-emerald-400 font-bold">Both Kept</span>}
+                        {log.isParentSurvivor && !log.isChildSurvivor && <span className="text-blue-400">Parent Kept</span>}
+                        {!log.isParentSurvivor && log.isChildSurvivor && <span className="text-green-500 font-bold">Child Kept</span>}
+                        {!log.isParentSurvivor && !log.isChildSurvivor && <span className="text-red-500/50">Discarded</span>}
                    </td>
                </tr>
            ))}
