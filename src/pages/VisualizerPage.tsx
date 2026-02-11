@@ -37,7 +37,9 @@ const VisualizerPage: React.FC = () => {
     const [history, setHistory] = useState<{ generation: number, bestFitness: number, avgFitness: number }[]>([]);
     const [running, setRunning] = useState(false);
     const [stepLogs, setStepLogs] = useState<StepLog>([]);
-    const [isMaximized, setIsMaximized] = useState(false);
+    const [errorHistoryMaximized, setErrorHistoryMaximized] = useState(false);
+    const [scatter2DMaximized, setScatter2DMaximized] = useState(false);
+    const [scatter3DMaximized, setScatter3DMaximized] = useState(false);
 
     // Enforce 2D genome for algorithms using 3D visualization to match plot dimensions
     useEffect(() => {
@@ -217,7 +219,7 @@ const VisualizerPage: React.FC = () => {
                             </button>
                         </div>
 
-                        <ConfigPanel config={config} setConfig={setConfig} disabled={running || gen > 0} algo={algo} />
+                        <ConfigPanel config={config} setConfig={setConfig} disabled={running || (gen > 0 && gen < config.maxGenerations)} algo={algo} />
 
                         {/* Problem Context Info */}
                         <div className="mt-6 pt-4 border-t border-slate-700">
@@ -274,10 +276,38 @@ const VisualizerPage: React.FC = () => {
                         currentPop={pop} 
                         algo={algo} 
                         config={config} 
-                        isMaximized={isMaximized}
-                        onToggleMaximize={() => setIsMaximized(!isMaximized)}
+                        errorHistoryMaximized={errorHistoryMaximized}
+                        scatter2DMaximized={scatter2DMaximized}
+                        scatter3DMaximized={scatter3DMaximized}
+                        onToggleErrorHistory={() => {
+                            const newState = !errorHistoryMaximized;
+                            setErrorHistoryMaximized(newState);
+                            // Only minimize others if expanding this one
+                            if (newState) {
+                                setScatter2DMaximized(false);
+                                setScatter3DMaximized(false);
+                            }
+                        }}
+                        onToggleScatter2D={() => {
+                            const newState = !scatter2DMaximized;
+                            setScatter2DMaximized(newState);
+                            // Only minimize others if expanding this one
+                            if (newState) {
+                                setErrorHistoryMaximized(false);
+                                setScatter3DMaximized(false);
+                            }
+                        }}
+                        onToggleScatter3D={() => {
+                            const newState = !scatter3DMaximized;
+                            setScatter3DMaximized(newState);
+                            // Only minimize others if expanding this one
+                            if (newState) {
+                                setErrorHistoryMaximized(false);
+                                setScatter2DMaximized(false);
+                            }
+                        }}
                     />
-                    {!isMaximized && (
+                    {!errorHistoryMaximized && !scatter2DMaximized && !scatter3DMaximized && (
                         <>
                             <PopulationTable
                                 population={pop}

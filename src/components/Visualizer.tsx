@@ -16,11 +16,26 @@ interface Props {
   currentPop: Individual[];
   algo: string;
   config: EAConfig;
-  isMaximized?: boolean;
-  onToggleMaximize?: () => void;
+  errorHistoryMaximized?: boolean;
+  scatter2DMaximized?: boolean;
+  scatter3DMaximized?: boolean;
+  onToggleErrorHistory?: () => void;
+  onToggleScatter2D?: () => void;
+  onToggleScatter3D?: () => void;
 }
 
-const Visualizer: React.FC<Props> = ({ history, currentPop, algo, config, isMaximized = false, onToggleMaximize }) => {
+const Visualizer: React.FC<Props> = ({ 
+  history, 
+  currentPop, 
+  algo, 
+  config, 
+  errorHistoryMaximized = false,
+  scatter2DMaximized = false,
+  scatter3DMaximized = false,
+  onToggleErrorHistory,
+  onToggleScatter2D,
+  onToggleScatter3D
+}) => {
   const isKnapsack = algo === 'GA';
   const isGPSine = algo === 'GP' && config.gpProblem === 'Sine';
   
@@ -73,57 +88,79 @@ const Visualizer: React.FC<Props> = ({ history, currentPop, algo, config, isMaxi
 
   const isRealValued = !isKnapsack && !isGPSine;
 
-  const heightClass = isMaximized ? 'h-[40vh]' : 'h-64';
+  // Grid layout - always use same column count
+  const gridCols = isRealValued ? 'xl:grid-cols-3 lg:grid-cols-2' : 'lg:grid-cols-2';
+
+  // Height classes based on maximized state
+  const normalHeightClass = 'h-64';
+  const maximizedHeightClass = 'h-[50vh]';
+
+  // Determine which graph is maximized
+  const anyMaximized = errorHistoryMaximized || scatter2DMaximized || scatter3DMaximized;
 
   return (
     <div className="relative">
-        {onToggleMaximize && (
-            <button 
-                onClick={onToggleMaximize}
-                className="absolute -top-3 -right-3 z-10 p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
-                title={isMaximized ? "Minimize" : "Maximize"}
-            >
-                {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-        )}
+        <div className={`flex flex-col lg:grid ${gridCols} gap-4 w-full`}>
+        {/* Render non-maximized graphs first, then maximized graph at bottom */}
         
-        <div className={`flex flex-col lg:grid ${isRealValued ? (isMaximized ? 'grid-cols-2' : 'xl:grid-cols-3 lg:grid-cols-2') : 'lg:grid-cols-2'} gap-4 w-full`}>
-        {/* Fitness History */}
-        <div className={`bg-slate-800/50 p-4 rounded-lg border border-slate-700 ${heightClass}`}>
+        {/* Fitness History - render first if not maximized, last if maximized */}
+        {!errorHistoryMaximized && (
+          <div className={`bg-slate-800/50 p-4 rounded-lg border border-slate-700 relative ${normalHeightClass}`}>
+            {onToggleErrorHistory && (
+              <button 
+                onClick={onToggleErrorHistory}
+                className="absolute bottom-2 right-2 z-10 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
+                title={errorHistoryMaximized ? "Minimize" : "Maximize"}
+              >
+                {errorHistoryMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
+            )}
             <h3 className="text-xs uppercase text-slate-400 mb-2">
-                {isKnapsack ? 'Value History (Higher is Better)' : 'Error History (Lower is Better)'}
+              {isKnapsack ? 'Value History (Higher is Better)' : 'Error History (Lower is Better)'}
             </h3>
             <div style={{ width: '100%', height: '85%' }}>
-            <ResponsiveContainer>
+              <ResponsiveContainer>
                 <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="generation" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
-                <Line type="monotone" dataKey="bestFitness" name="Best" stroke="#10b981" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="avgFitness" name="Avg" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="generation" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
+                  <Line type="monotone" dataKey="bestFitness" name="Best" stroke="#10b981" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="avgFitness" name="Avg" stroke="#3b82f6" strokeWidth={2} dot={false} />
                 </LineChart>
-            </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
-        </div>
+          </div>
+        )}
 
-        <div className={`bg-slate-800/50 p-4 rounded-lg border border-slate-700 ${heightClass}`}>
+        {/* 2D Projection - render first if not maximized, last if maximized */}
+        {!scatter2DMaximized && (
+          <div className={`bg-slate-800/50 p-4 rounded-lg border border-slate-700 relative ${normalHeightClass}`}>
+            {onToggleScatter2D && (
+              <button 
+                onClick={onToggleScatter2D}
+                className="absolute bottom-2 right-2 z-10 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
+                title={scatter2DMaximized ? "Minimize" : "Maximize"}
+              >
+                {scatter2DMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
+            )}
             <h3 className="text-xs uppercase text-slate-400 mb-2">
                 {isGPSine ? 'Function Fit (Target vs Best)' : (isKnapsack ? 'Knapsack State (Weight vs Value)' : '2D Projection (Gene 0 vs Gene 1)')}
             </h3>
             <div style={{ width: '100%', height: '85%' }}>
-            <ResponsiveContainer>
+              <ResponsiveContainer>
                 {isGPSine ? (
-                    <LineChart data={sineData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                        <XAxis dataKey="x" stroke="#94a3b8" fontSize={12} />
-                        <YAxis stroke="#94a3b8" fontSize={12} domain={[-2, 2]} />
-                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
-                        <Line type="monotone" dataKey="target" name="Target (sin)" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="best" name="Best Evolved" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                    </LineChart>
+                  <LineChart data={sineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="x" stroke="#94a3b8" fontSize={12} />
+                    <YAxis stroke="#94a3b8" fontSize={12} domain={[-2, 2]} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
+                    <Line type="monotone" dataKey="target" name="Target (sin)" stroke="#10b981" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="best" name="Best Evolved" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  </LineChart>
                 ) : (
-                    <ScatterChart>
+                  <ScatterChart>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis 
                         type="number" dataKey="x" 
@@ -150,22 +187,133 @@ const Visualizer: React.FC<Props> = ({ history, currentPop, algo, config, isMaxi
                             <Cell key={`cell-${index}`} fill={isKnapsack ? (entry.x <= config.knapsackCapacity ? '#10b981' : '#ef4444') : '#f472b6'} />
                         ))}
                     </Scatter>
-                    </ScatterChart>
+                  </ScatterChart>
                 )}
-            </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
-        </div>
+          </div>
+        )}
 
-        {/* 3D Scatter (Only for Real Valued) */}
-        {isRealValued && (
-            <div className={`${isMaximized ? 'col-span-2 h-[60vh]' : 'h-64'}`}>
-                <ThreeDScatter 
-                    points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#f472b6' }))} 
-                    range={5} 
-                    title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
-                    functionType={config.problemType}
-                />
+        {/* 3D Scatter (Only for Real Valued) - render first if not maximized, last if maximized */}
+        {isRealValued && !scatter3DMaximized && (
+          <div className={`relative ${normalHeightClass}`}>
+            {onToggleScatter3D && (
+              <button 
+                onClick={onToggleScatter3D}
+                className="absolute bottom-2 right-2 z-10 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
+                title={scatter3DMaximized ? "Minimize" : "Maximize"}
+              >
+                {scatter3DMaximized ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
+            )}
+            <ThreeDScatter 
+              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff' }))} 
+              range={5} 
+              title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
+              functionType={config.problemType}
+            />
+          </div>
+        )}
+
+        {/* Maximized graphs rendered at bottom, spanning full width */}
+        {errorHistoryMaximized && (
+          <div className={`bg-slate-800/50 p-4 rounded-lg border border-slate-700 relative ${maximizedHeightClass} col-span-full`}>
+            {onToggleErrorHistory && (
+              <button 
+                onClick={onToggleErrorHistory}
+                className="absolute bottom-2 right-2 z-10 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
+                title="Minimize"
+              >
+                <Minimize2 size={14} />
+              </button>
+            )}
+            <h3 className="text-xs uppercase text-slate-400 mb-2">
+              {isKnapsack ? 'Value History (Higher is Better)' : 'Error History (Lower is Better)'}
+            </h3>
+            <div style={{ width: '100%', height: '85%' }}>
+              <ResponsiveContainer>
+                <LineChart data={history}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="generation" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
+                  <Line type="monotone" dataKey="bestFitness" name="Best" stroke="#10b981" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="avgFitness" name="Avg" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
+          </div>
+        )}
+
+        {scatter2DMaximized && (
+          <div className={`bg-slate-800/50 p-4 rounded-lg border border-slate-700 relative ${maximizedHeightClass} col-span-full`}>
+            {onToggleScatter2D && (
+              <button 
+                onClick={onToggleScatter2D}
+                className="absolute bottom-2 right-2 z-10 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
+                title="Minimize"
+              >
+                <Minimize2 size={14} />
+              </button>
+            )}
+            <h3 className="text-xs uppercase text-slate-400 mb-2">
+              {isGPSine ? 'Function Fit (Target vs Best)' : '2D Projection (Gene 0 vs Gene 1)'}
+            </h3>
+            <div style={{ width: '100%', height: '85%' }}>
+              <ResponsiveContainer>
+                {isGPSine ? (
+                  <LineChart data={sineData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="x" stroke="#94a3b8" fontSize={12} />
+                    <YAxis stroke="#94a3b8" fontSize={12} domain={[-2, 2]} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
+                    <Line type="monotone" dataKey="target" name="Target (sin)" stroke="#10b981" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="best" name="Best Evolved" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                  </LineChart>
+                ) : (
+                  <ScatterChart>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      type="number" dataKey="x" name="Gene 0" stroke="#94a3b8" 
+                      domain={isKnapsack ? [-0.5, 1.5] : [-6, 6]} 
+                      allowDecimals={true} 
+                    />
+                    <YAxis 
+                      type="number" dataKey="y" name="Gene 1" stroke="#94a3b8" 
+                      domain={isKnapsack ? [-0.5, 1.5] : [-6, 6]} 
+                      allowDecimals={true} 
+                    />
+                    <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
+                    <Scatter name="Population" data={scatterData} fill="#ffffff" stroke="#000000" strokeWidth={1.5}>
+                      {scatterData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={isKnapsack ? (entry.z > 0 ? '#10b981' : '#ef4444') : '#ffffff'} stroke={isKnapsack ? (entry.z > 0 ? '#10b981' : '#ef4444') : '#000000'} strokeWidth={1.5} />
+                      ))}
+                    </Scatter>
+                  </ScatterChart>
+                )}
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {isRealValued && scatter3DMaximized && (
+          <div className={`relative ${maximizedHeightClass} col-span-full`}>
+            {onToggleScatter3D && (
+              <button 
+                onClick={onToggleScatter3D}
+                className="absolute bottom-2 right-2 z-10 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full shadow-lg border border-slate-500 transition-all"
+                title="Minimize"
+              >
+                <Minimize2 size={14} />
+              </button>
+            )}
+            <ThreeDScatter 
+              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff' }))} 
+              range={5} 
+              title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
+              functionType={config.problemType}
+            />
+          </div>
         )}
         </div>
     </div>

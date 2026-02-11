@@ -102,13 +102,17 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
       <div className="grid grid-cols-2 gap-4">
         {/* General Settings */}
         <div className="col-span-2 space-y-2">
-            <label className="block text-xs font-semibold text-slate-500 uppercase">Population Size</label>
+            <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Population Size</label>
             <input 
                 type="number" 
                 value={config.populationSize}
                 disabled={disabled}
                 onChange={(e) => handleChange('populationSize', parseInt(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 focus:border-blue-500 outline-none disabled:opacity-50"
+                className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                    disabled 
+                        ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                        : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                }`}
             />
         </div>
         <div className="space-y-2">
@@ -122,27 +126,37 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
             />
         </div>
         <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-500 uppercase">Generations</label>
+            <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Generations</label>
             <input 
                 type="number" 
                 value={config.maxGenerations}
                 disabled={disabled}
                 onChange={(e) => handleChange('maxGenerations', parseInt(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                    disabled 
+                        ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                        : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                }`}
             />
         </div>
 
         {/* Problem Selection for Real-Valued Algos */}
         {(algo === 'DE' || algo === 'PSO' || algo === 'ES') && (
             <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-500 uppercase">Problem Function</label>
-                <div className="flex bg-slate-900 p-1 rounded">
+                <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Problem Function</label>
+                <div className={`flex p-1 rounded ${disabled ? 'bg-slate-900/50 opacity-50 cursor-not-allowed' : 'bg-slate-900'}`}>
                     {['Sphere', 'Ackley'].map((p) => (
                         <button
                             key={p}
                             onClick={() => handleChange('problemType', p)}
                             disabled={disabled}
-                            className={`flex-1 text-xs py-1 rounded transition ${config.problemType === p ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`flex-1 text-xs py-1 rounded transition ${
+                                disabled 
+                                    ? 'cursor-not-allowed opacity-50' 
+                                    : config.problemType === p 
+                                        ? 'bg-blue-600 text-white shadow' 
+                                        : 'text-slate-400 hover:text-slate-200'
+                            }`}
                         >
                             {p}
                         </button>
@@ -155,30 +169,40 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
         {(algo === 'GA' || algo === 'DE' || algo === 'GP') && (
             <>
                 <div className="col-span-2 border-t border-slate-700 pt-2 mt-2">
-                    <p className="text-xs text-blue-400 mb-2 font-bold">Evolution Parameters</p>
+                    <p className={`text-xs mb-2 font-bold ${disabled ? 'text-blue-400/50' : 'text-blue-400'}`}>Evolution Parameters</p>
                 </div>
                 {algo === 'DE' && (
                     <div className="space-y-2">
-                        <label className="block text-xs font-semibold text-slate-500 uppercase">Diff Weight (F)</label>
+                        <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Diff Weight (F)</label>
                         <input 
                             type="number" step="0.1"
                             value={config.F}
                             disabled={disabled}
                             onChange={(e) => handleChange('F', parseFloat(e.target.value))}
-                            className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                            className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                                disabled 
+                                    ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                    : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                            }`}
                         />
                     </div>
                 )}
                 {algo === 'GP' && (
                     <div className="col-span-2 space-y-2">
-                        <label className="block text-xs font-semibold text-slate-500 uppercase">GP Problem</label>
-                        <div className="flex bg-slate-900 p-1 rounded">
+                        <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>GP Problem</label>
+                        <div className={`flex p-1 rounded ${disabled ? 'bg-slate-900/50 opacity-50 cursor-not-allowed' : 'bg-slate-900'}`}>
                             {['Linear', 'Sine'].map((p) => (
                                 <button
                                     key={p}
                                     onClick={() => handleChange('gpProblem', p)}
                                     disabled={disabled}
-                                    className={`flex-1 text-xs py-1 rounded transition ${config.gpProblem === p ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                                    className={`flex-1 text-xs py-1 rounded transition ${
+                                        disabled 
+                                            ? 'cursor-not-allowed opacity-50' 
+                                            : config.gpProblem === p 
+                                                ? 'bg-blue-600 text-white shadow' 
+                                                : 'text-slate-400 hover:text-slate-200'
+                                    }`}
                                 >
                                     {p}
                                 </button>
@@ -187,34 +211,46 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
                     </div>
                 )}
                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-slate-500 uppercase">Mutation Rate</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Mutation Rate</label>
                     <input 
                         type="number" step="0.05"
                         value={config.mutationRate}
                         disabled={disabled}
                         onChange={(e) => handleChange('mutationRate', parseFloat(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-slate-500 uppercase">Crossover Rate</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Crossover Rate</label>
                     <input 
                         type="number" step="0.1"
                         value={config.crossoverRate}
                         disabled={disabled}
                         onChange={(e) => handleChange('crossoverRate', parseFloat(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
                 {algo === 'GA' && (
                     <div className="space-y-2">
-                        <label className="block text-xs font-semibold text-slate-500 uppercase">Tournament Size</label>
+                        <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Tournament Size</label>
                         <input 
                             type="number" 
                             value={config.tournamentSize}
                             disabled={disabled}
                             onChange={(e) => handleChange('tournamentSize', parseInt(e.target.value))}
-                            className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                            className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                                disabled 
+                                    ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                    : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                            }`}
                         />
                     </div>
                 )}
@@ -274,36 +310,48 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
         {algo === 'PSO' && (
             <>
                 <div className="col-span-2 border-t border-slate-700 pt-2 mt-2">
-                    <p className="text-xs text-emerald-400 mb-2 font-bold">PSO Parameters</p>
+                    <p className={`text-xs mb-2 font-bold ${disabled ? 'text-emerald-400/50' : 'text-emerald-400'}`}>PSO Parameters</p>
                 </div>
                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-slate-500 uppercase">Inertia (w)</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Inertia (w)</label>
                     <input 
                         type="number" step="0.1"
                         value={config.w}
                         disabled={disabled}
                         onChange={(e) => handleChange('w', parseFloat(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-slate-500 uppercase">Cognitive (c1)</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Cognitive (c1)</label>
                     <input 
                         type="number" step="0.1"
                         value={config.c1}
                         disabled={disabled}
                         onChange={(e) => handleChange('c1', parseFloat(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-slate-500 uppercase">Social (c2)</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Social (c2)</label>
                     <input 
                         type="number" step="0.1"
                         value={config.c2}
                         disabled={disabled}
                         onChange={(e) => handleChange('c2', parseFloat(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
             </>
@@ -313,16 +361,20 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
         {algo === 'ES' && (
             <>
                 <div className="col-span-2 border-t border-slate-700 pt-2 mt-2">
-                    <p className="text-xs text-fuchsia-400 mb-2 font-bold">ES Parameters</p>
+                    <p className={`text-xs mb-2 font-bold ${disabled ? 'text-fuchsia-400/50' : 'text-fuchsia-400'}`}>ES Parameters</p>
                 </div>
                 <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-slate-500 uppercase">Sigma (Mutation Step)</label>
+                    <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Sigma (Mutation Step)</label>
                     <input 
                         type="number" step="0.1"
                         value={config.sigma}
                         disabled={disabled}
                         onChange={(e) => handleChange('sigma', parseFloat(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
             </>
@@ -337,13 +389,17 @@ const ConfigPanel: React.FC<Props> = ({ config, setConfig, disabled, algo }) => 
                 
                 {/* Capacity Input */}
                 <div className="mb-4">
-                     <label className="block text-xs font-semibold text-slate-500 uppercase">Max Capacity</label>
+                     <label className={`block text-xs font-semibold uppercase ${disabled ? 'text-slate-600' : 'text-slate-500'}`}>Max Capacity</label>
                      <input 
                         type="number" 
                         value={config.knapsackCapacity}
                         disabled={disabled}
                         onChange={(e) => handleChange('knapsackCapacity', parseInt(e.target.value))}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 disabled:opacity-50"
+                        className={`w-full rounded px-2 py-1 text-sm outline-none ${
+                            disabled 
+                                ? 'bg-slate-900/50 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-60' 
+                                : 'bg-slate-900 border border-slate-700 text-slate-200 focus:border-blue-500'
+                        }`}
                     />
                 </div>
 

@@ -38,6 +38,43 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
       return x*x + y*y;
   };
 
+  // Convert function value to heatmap color with transparency
+  const valueToColor = (value: number, minVal: number, maxVal: number, alpha: number = 0.7) => {
+      // Normalize value to 0-1 range
+      const normalized = (value - minVal) / (maxVal - minVal);
+      
+      // Create gradient: blue (low) -> cyan -> green -> yellow -> red (high)
+      let r = 0, g = 0, b = 0;
+      
+      if (normalized < 0.25) {
+          // Blue to cyan
+          const t = normalized / 0.25;
+          r = 0;
+          g = Math.floor(t * 255);
+          b = 255;
+      } else if (normalized < 0.5) {
+          // Cyan to green
+          const t = (normalized - 0.25) / 0.25;
+          r = 0;
+          g = 255;
+          b = Math.floor((1 - t) * 255);
+      } else if (normalized < 0.75) {
+          // Green to yellow
+          const t = (normalized - 0.5) / 0.25;
+          r = Math.floor(t * 255);
+          g = 255;
+          b = 0;
+      } else {
+          // Yellow to red
+          const t = (normalized - 0.75) / 0.25;
+          r = 255;
+          g = Math.floor((1 - t) * 255);
+          b = 0;
+      }
+      
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   // Draw function and Event Listeners
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -85,22 +122,89 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
         return project(wx, wy, wz);
     };
 
-    // Draw Axis / Grid
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 1;
-    const steps = 10;
-    const stepSize = (range * 1) / steps;
-    ctx.beginPath();
+    // Calculate min/max values for color mapping
+    const steps = 50; // Higher resolution for smoother heatmap
+    const stepSize = (range * 2) / steps;
+    let minVal = Infinity;
+    let maxVal = -Infinity;
+    
+    // Sample function values to find min/max
     for (let x = -range; x <= range; x += stepSize) {
-        for (let y = -range; y <= range; y += stepSize/5) {
+        for (let y = -range; y <= range; y += stepSize) {
+            const z = getZ(x, y);
+            minVal = Math.min(minVal, z);
+            maxVal = Math.max(maxVal, z);
+        }
+    }
+
+    // Draw heatmap surface with filled quads
+    const quadSize = stepSize;
+    const quads: Array<{ points: Array<{ x: number, y: number, z: number }>, color: string, avgZ: number }> = [];
+    
+    for (let x = -range; x < range; x += quadSize) {
+        for (let y = -range; y < range; y += quadSize) {
+            // Get four corners of the quad
+            const z1 = getZ(x, y);
+            const z2 = getZ(x + quadSize, y);
+            const z3 = getZ(x + quadSize, y + quadSize);
+            const z4 = getZ(x, y + quadSize);
+            
+            const avgZ = (z1 + z2 + z3 + z4) / 4;
+            
+            const p1 = transform(x, y, z1);
+            const p2 = transform(x + quadSize, y, z2);
+            const p3 = transform(x + quadSize, y + quadSize, z3);
+            const p4 = transform(x, y + quadSize, z4);
+            
+            // Calculate center point for better depth sorting
+            const centerX = (x + x + quadSize) / 2;
+            const centerY = (y + y + quadSize) / 2;
+            const centerZ = getZ(centerX, centerY);
+            const centerP = transform(centerX, centerY, centerZ);
+            
+            // Use center z for depth sorting (more accurate)
+            const depthZ = centerP.z;
+            
+            quads.push({
+                points: [p1, p2, p3, p4],
+                color: valueToColor(avgZ, minVal, maxVal, 1.0),
+                avgZ: depthZ
+            });
+        }
+    }
+    
+    // Sort quads by depth (back to front) - more accurate sorting
+    quads.sort((a, b) => b.avgZ - a.avgZ);
+    
+    // Draw quads - colors already have transparency built in
+    quads.forEach(quad => {
+        ctx.fillStyle = quad.color;
+        ctx.beginPath();
+        ctx.moveTo(quad.points[0].x, quad.points[0].y);
+        ctx.lineTo(quad.points[1].x, quad.points[1].y);
+        ctx.lineTo(quad.points[2].x, quad.points[2].y);
+        ctx.lineTo(quad.points[3].x, quad.points[3].y);
+        ctx.closePath();
+        ctx.fill();
+    });
+
+    // Draw wireframe grid on top for better visibility
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 0.5;
+    const gridSteps = 10;
+    const gridStepSize = (range * 2) / gridSteps;
+    
+    ctx.beginPath();
+    for (let x = -range; x <= range; x += gridStepSize) {
+        for (let y = -range; y <= range; y += gridStepSize/5) {
             const z = getZ(x, y);
             const p = transform(x, y, z);
             if (y === -range) ctx.moveTo(p.x, p.y);
             else ctx.lineTo(p.x, p.y);
         }
     }
-    for (let y = -range; y <= range; y += stepSize) {
-        for (let x = -range; x <= range; x += stepSize/5) {
+    for (let y = -range; y <= range; y += gridStepSize) {
+        for (let x = -range; x <= range; x += gridStepSize/5) {
              const z = getZ(x, y);
              const p = transform(x, y, z);
              if (x === -range) ctx.moveTo(p.x, p.y);
@@ -109,12 +213,18 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
     }
     ctx.stroke();
 
-    // 2. Draw Points
+    // 2. Draw Points with contrasting colors and outline
     points.forEach(pt => {
         const p = transform(pt.x, pt.y, pt.z);
-        ctx.fillStyle = pt.color;
+        const radius = 3 * Math.sqrt(zoom);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3 * Math.sqrt(zoom), 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        // Draw outline for better visibility
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Draw filled point
+        ctx.fillStyle = pt.color;
         ctx.fill();
     });
 
@@ -127,7 +237,7 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [points, range, rotation, zoom, pan]);
+  }, [points, range, rotation, zoom, pan, functionType]);
 
   // Native wheel listener to prevent default scroll
   useEffect(() => {
