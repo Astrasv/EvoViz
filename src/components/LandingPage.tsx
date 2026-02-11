@@ -1,4 +1,4 @@
-import { ArrowDown, Cpu, GitBranch, Globe, Zap, Activity, Dna, Search, Network, Sparkles } from 'lucide-react';
+import { ArrowDown, Cpu, GitBranch, Globe, Zap, Activity, Dna, Search, Network } from 'lucide-react';
 import BackgroundEffect from './BackgroundEffect';
 import React from 'react';
 import { Link } from 'react-router-dom';
