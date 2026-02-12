@@ -164,8 +164,8 @@ const VisualizerPage: React.FC = () => {
                  </div>
 
                  {/* Center: Title */}
-                 <div className="relative z-10 flex-1 flex items-center justify-center order-2 md:order-none">
-                    <p className="text-slate-300 text-lg md:text-xl font-bold">Algorithm Visualization Engine</p>
+                 <div className="relative z-10 w-full md:flex-1 flex items-center justify-center order-2 md:order-none">
+                    <p className="text-slate-300 text-lg md:text-xl font-bold text-center">Algorithm Visualization Engine</p>
                  </div>
 
                  {/* Right: Navigation Tabs */}
