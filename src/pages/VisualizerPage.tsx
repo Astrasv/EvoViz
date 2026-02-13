@@ -11,7 +11,6 @@ import PopulationTable from '../components/PopulationTable';
 import Visualizer from '../components/Visualizer';
 import ConfigPanel from '../components/ConfigPanel';
 import StepLogView from '../components/StepLogView';
-import { ArrowLeft } from 'lucide-react';
 import logo from '../assets/Evo-Viz-Logo.png';
 
 type Algorithm = 'GA' | 'DE' | 'PSO' | 'GP' | 'ES';
@@ -157,19 +156,16 @@ const VisualizerPage: React.FC = () => {
                     <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-600/10 rounded-full blur-[80px]"></div>
                  </div>
 
-                 {/* Left: Back Button and Title */}
-                 <div className="relative z-10 order-1 md:order-none flex items-center gap-3">
-                    <Link to="/" className="group p-2 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 transition-all">
-                        <ArrowLeft className="w-5 h-5 text-slate-300 group-hover:text-white" />
-                    </Link>
-                    <p className="text-slate-300 text-sm md:text-base font-medium hidden md:block">Algorithm Visualization Engine</p>
-                 </div>
-
-                 {/* Center: Logo Only */}
-                 <div className="relative z-10 flex-1 flex items-center justify-center order-2 md:order-none -my-1">
+                 {/* Left: Logo */}
+                 <div className="relative z-10 order-1 md:order-none flex items-center -my-1">
                     <Link to="/" className="cursor-pointer hover:opacity-80 transition-opacity block">
                         <img src={logo} alt="EvoViz" className="h-20 md:h-28 block" />
                     </Link>
+                 </div>
+
+                 {/* Center: Title */}
+                 <div className="relative z-10 w-full md:flex-1 flex items-center justify-center order-2 md:order-none">
+                    <p className="text-slate-300 text-lg md:text-xl font-bold text-center">Algorithm Visualization Engine</p>
                  </div>
 
                  {/* Right: Navigation Tabs */}

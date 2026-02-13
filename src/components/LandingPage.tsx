@@ -24,7 +24,7 @@ const LandingPage: React.FC = () => {
 
           
 
-          <img src={logo} alt="EvoViz" className="h-60 md:h-80 mx-auto mb-6 drop-shadow-2xl" />
+          <img src={logo} alt="EvoViz" className="h-[264px] md:h-[352px] mx-auto mb-6 drop-shadow-2xl" />
 
           <p className="text-xl md:text-3xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
             An interactive platform for visualizing and understanding how Evolutionary Algorithms evolve solutions through computational processes.
@@ -94,14 +94,15 @@ const LandingPage: React.FC = () => {
 
 
       {/* SECTION 3: ALGORITHM SELECTION */}
-      <section id="algorithms" className="min-h-screen flex flex-col items-center justify-center p-6 md:p-8 relative z-10 overflow-visible">
-        <div className="max-w-6xl mx-auto w-full text-center px-6 md:px-12 overflow-visible pt-16 md:pt-24">
-          <h2 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 mb-16 flex items-center justify-center gap-4 px-6 md:px-12 overflow-visible leading-normal pb-2">
-            <Network className="w-10 h-10 text-blue-400 flex-shrink-0" />
+      <section id="algorithms" className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative z-10 overflow-visible">
+        <div className="max-w-7xl mx-auto w-full text-center px-4 sm:px-6 md:px-12 overflow-visible pt-12 sm:pt-16 md:pt-24">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 mb-12 sm:mb-16 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-6 md:px-12 overflow-visible leading-normal pb-2">
+            <Network className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400 flex-shrink-0" />
             <span className="overflow-visible">Select Your Algorithm</span>
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left justify-items-center">
+          {/* Responsive grid that adapts beautifully to all screen sizes */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 text-left justify-items-stretch sm:justify-items-center">
             <AlgoCard
               id="GA"
               title="Genetic Algorithm"
@@ -123,25 +124,43 @@ const LandingPage: React.FC = () => {
               icon={<Globe />}
               color="emerald"
             />
-            <div className="col-span-full lg:col-span-3 flex justify-center gap-8">
-              <div className="w-full" >
-                <AlgoCard
-                  id="GP"
-                  title="Genetic Programming"
-                  desc="Evolution writing code. We breed syntax trees that eventually (hopefully) solve the equation. It's like infinite monkeys with typewriters, but optimized."
-                  icon={<GitBranch />}
-                  color="purple"
-                />
-              </div>
-              <div className="w-full" >
-                <AlgoCard
-                  id="ES"
-                  title="Evolution Strategies"
-                  desc="The self-optimizing optimizer. It adapts its own mutation rates (Sigma) on the fly. It learns how to learn. Meta, right?"
-                  icon={<Activity />}
-                  color="fuchsia"
-                />
-              </div>
+            {/* GP: Natural flow on tablets, repositioned on desktop */}
+            <div className="lg:hidden">
+              <AlgoCard
+                id="GP"
+                title="Genetic Programming"
+                desc="Evolution writing code. We breed syntax trees that eventually (hopefully) solve the equation. It's like infinite monkeys with typewriters, but optimized."
+                icon={<GitBranch />}
+                color="purple"
+              />
+            </div>
+            {/* ES: Centered on tablets, repositioned on desktop */}
+            <div className="col-span-1 sm:col-span-2 sm:flex sm:justify-center lg:hidden">
+              <AlgoCard
+                id="ES"
+                title="Evolution Strategies"
+                desc="The self-optimizing optimizer. It adapts its own mutation rates (Sigma) on the fly. It learns how to learn. Meta, right?"
+                icon={<Activity />}
+                color="fuchsia"
+                className="sm:max-w-sm"
+              />
+            </div>
+            {/* Desktop: GP and ES centered together */}
+            <div className="hidden lg:col-span-3 lg:flex lg:justify-center lg:gap-6 md:gap-8">
+              <AlgoCard
+                id="GP"
+                title="Genetic Programming"
+                desc="Evolution writing code. We breed syntax trees that eventually (hopefully) solve the equation. It's like infinite monkeys with typewriters, but optimized."
+                icon={<GitBranch />}
+                color="purple"
+              />
+              <AlgoCard
+                id="ES"
+                title="Evolution Strategies"
+                desc="The self-optimizing optimizer. It adapts its own mutation rates (Sigma) on the fly. It learns how to learn. Meta, right?"
+                icon={<Activity />}
+                color="fuchsia"
+              />
             </div>
           </div>
 
@@ -167,7 +186,7 @@ const InfoCard = ({ icon, title, desc }: { icon: React.ReactNode, title: string,
   </div>
 );
 
-const AlgoCard = ({ id, title, desc, icon, color }: any) => {
+const AlgoCard = ({ id, title, desc, icon, color, className = "" }: any) => {
   // Dynamic color maps
   const colors: any = {
     blue: {
@@ -217,25 +236,25 @@ const AlgoCard = ({ id, title, desc, icon, color }: any) => {
   return (
     <Link
       to={`/visualizer/${id.toLowerCase()}`}
-      className={`group text-left p-8 rounded-3xl bg-slate-900/40 border border-slate-800 backdrop-blur-md transition-all duration-500 hover:-translate-y-3 relative overflow-hidden w-full max-w-sm ${c.border} ${c.bg} ${c.shadow} block`}
+      className={`group text-left p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/40 border border-slate-800 backdrop-blur-md transition-all duration-500 hover:-translate-y-2 sm:hover:-translate-y-3 relative overflow-hidden w-full max-w-sm ${c.border} ${c.bg} ${c.shadow} block ${className}`}
     >
       {/* Inner Glow Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-      <div className="flex items-start justify-between mb-6 relative z-10">
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg border border-white/5 ${c.iconBg} ${c.iconColor} group-hover:scale-110 group-hover:rotate-3`}>
-          {React.cloneElement(icon, { size: 28 })}
+      <div className="flex items-start justify-between mb-4 sm:mb-6 relative z-10">
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg border border-white/5 ${c.iconBg} ${c.iconColor} group-hover:scale-110 group-hover:rotate-3`}>
+          {React.cloneElement(icon, { className: "w-6 h-6 sm:w-7 sm:h-7" })}
         </div>
         <div className={`opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0 ${c.text}`}>
-          <ArrowDown className="w-6 h-6 -rotate-90" />
+          <ArrowDown className="w-5 h-5 sm:w-6 sm:h-6 -rotate-90" />
         </div>
       </div>
 
       <div className="relative z-10">
-        <h3 className={`text-2xl font-bold text-slate-200 mb-3 transition-colors duration-300 ${c.text}`}>
+        <h3 className={`text-xl sm:text-2xl font-bold text-slate-200 mb-2 sm:mb-3 transition-colors duration-300 ${c.text}`}>
           {title}
         </h3>
-        <p className="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors duration-300">
+        <p className="text-slate-400 text-xs sm:text-sm leading-relaxed group-hover:text-slate-300 transition-colors duration-300">
           {desc}
         </p>
       </div>
