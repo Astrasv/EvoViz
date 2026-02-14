@@ -208,7 +208,7 @@ const Visualizer: React.FC<Props> = ({
               </button>
             )}
             <ThreeDScatter 
-              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff' }))} 
+              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff', id: d.id }))} 
               range={5} 
               title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
               functionType={config.problemType}
@@ -275,19 +275,24 @@ const Visualizer: React.FC<Props> = ({
                   <ScatterChart>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                     <XAxis 
-                      type="number" dataKey="x" name="Gene 0" stroke="#94a3b8" 
-                      domain={isKnapsack ? [-0.5, 1.5] : [-6, 6]} 
+                      type="number" dataKey="x" name={isKnapsack ? "Total Weight" : "Gene 0"} stroke="#94a3b8" 
+                      domain={isKnapsack ? [0, 'auto'] : [-6, 6]} 
                       allowDecimals={true} 
+                      label={isKnapsack ? { value: 'Total Weight', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 10 } : undefined}
                     />
                     <YAxis 
-                      type="number" dataKey="y" name="Gene 1" stroke="#94a3b8" 
-                      domain={isKnapsack ? [-0.5, 1.5] : [-6, 6]} 
+                      type="number" dataKey="y" name={isKnapsack ? "Total Value" : "Gene 1"} stroke="#94a3b8" 
+                      domain={isKnapsack ? [0, 'auto'] : [-6, 6]} 
                       allowDecimals={true} 
+                      label={isKnapsack ? { value: 'Total Value', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 } : undefined}
                     />
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f1f5f9' }} />
-                    <Scatter name="Population" data={scatterData} fill="#ffffff" stroke="#000000" strokeWidth={1.5}>
+                    {isKnapsack && (
+                      <ReferenceLine x={config.knapsackCapacity} stroke="#ef4444" strokeDasharray="3 3" label={{ value: 'Max Cap', fill: '#ef4444', position: 'insideTopRight', fontSize: 10 }} />
+                    )}
+                    <Scatter name="Population" data={scatterData} fill={isKnapsack ? "#f472b6" : "#ffffff"} stroke={isKnapsack ? "#000000" : "#000000"} strokeWidth={1.5}>
                       {scatterData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={isKnapsack ? (entry.z > 0 ? '#10b981' : '#ef4444') : '#ffffff'} stroke={isKnapsack ? (entry.z > 0 ? '#10b981' : '#ef4444') : '#000000'} strokeWidth={1.5} />
+                        <Cell key={`cell-${index}`} fill={isKnapsack ? (entry.x <= config.knapsackCapacity ? '#10b981' : '#ef4444') : '#ffffff'} stroke={isKnapsack ? (entry.x <= config.knapsackCapacity ? '#10b981' : '#ef4444') : '#000000'} strokeWidth={1.5} />
                       ))}
                     </Scatter>
                   </ScatterChart>
@@ -309,7 +314,7 @@ const Visualizer: React.FC<Props> = ({
               </button>
             )}
             <ThreeDScatter 
-              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff' }))} 
+              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff', id: d.id }))} 
               range={5} 
               title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
               functionType={config.problemType}
