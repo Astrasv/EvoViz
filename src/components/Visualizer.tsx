@@ -208,7 +208,7 @@ const Visualizer: React.FC<Props> = ({
               </button>
             )}
             <ThreeDScatter 
-              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff' }))} 
+              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff', id: d.id }))} 
               range={5} 
               title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
               functionType={config.problemType}
@@ -309,7 +309,7 @@ const Visualizer: React.FC<Props> = ({
               </button>
             )}
             <ThreeDScatter 
-              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff' }))} 
+              points={scatterData.map(d => ({ x: d.x, y: d.y, z: d.z, color: '#ffffff', id: d.id }))} 
               range={5} 
               title={`3D ${config.problemType || 'Sphere'} Landscape (Drag to Rotate)`}
               functionType={config.problemType}

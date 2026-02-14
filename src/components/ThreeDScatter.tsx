@@ -5,6 +5,7 @@ interface Point3D {
   y: number;
   z: number;
   color: string;
+  id?: number | string; // Optional ID for matching points during animation
 }
 
 interface Props {
@@ -25,6 +26,14 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
   const lastMouse = useRef({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Animation state for smooth point transitions
+  const previousPointsRef = useRef<Point3D[]>(points.map(p => ({ ...p })));
+  const animatedPointsRef = useRef<Point3D[]>(points.map(p => ({ ...p })));
+  const animationStartTimeRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [animationTick, setAnimationTick] = useState(0); // Trigger re-render during animation
+  const ANIMATION_DURATION = 800; // milliseconds
 
   const getZ = (x: number, y: number) => {
       if (functionType === 'Ackley') {
@@ -74,6 +83,116 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
       
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
+
+  // Animation effect - interpolate between previous and current points
+  useEffect(() => {
+    // Create a map of previous points by ID for efficient lookup
+    const prevPointsMap = new Map<string | number, Point3D>();
+    previousPointsRef.current.forEach(p => {
+      if (p.id !== undefined) {
+        prevPointsMap.set(p.id, p);
+      }
+    });
+    
+    // Check if points have actually changed
+    const pointsChanged = previousPointsRef.current.length !== points.length ||
+      points.some((newPoint, i) => {
+        if (newPoint.id === undefined) {
+          // If no ID, compare by index
+          const prevPoint = previousPointsRef.current[i];
+          return !prevPoint || 
+            prevPoint.x !== newPoint.x || 
+            prevPoint.y !== newPoint.y || 
+            prevPoint.z !== newPoint.z;
+        } else {
+          // Compare by ID
+          const prevPoint = prevPointsMap.get(newPoint.id);
+          return !prevPoint || 
+            prevPoint.x !== newPoint.x || 
+            prevPoint.y !== newPoint.y || 
+            prevPoint.z !== newPoint.z;
+        }
+      });
+
+    // Always animate if we have previous points (even if count differs)
+    if (pointsChanged && previousPointsRef.current.length > 0) {
+      // Cancel any existing animation
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      // Start animation
+      animationStartTimeRef.current = performance.now();
+      
+      const animate = (currentTime: number) => {
+        if (!animationStartTimeRef.current) return;
+        
+        const elapsed = currentTime - animationStartTimeRef.current;
+        const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
+        
+        // Easing function for smooth animation
+        const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+        
+        // Interpolate each point by matching ID or index
+        animatedPointsRef.current = points.map((newPoint, i) => {
+          let prevPoint: Point3D | undefined;
+          
+          if (newPoint.id !== undefined) {
+            // Try to find previous point by ID
+            prevPoint = prevPointsMap.get(newPoint.id);
+          }
+          
+          // Fallback to index if no ID match (for same-sized arrays)
+          if (!prevPoint && i < previousPointsRef.current.length) {
+            prevPoint = previousPointsRef.current[i];
+            // Only use if IDs match or both are undefined
+            if (prevPoint && prevPoint.id !== undefined && newPoint.id !== undefined && prevPoint.id !== newPoint.id) {
+              prevPoint = undefined;
+            }
+          }
+          
+          // If still no previous point, start from current position (no animation)
+          if (!prevPoint) {
+            return { ...newPoint };
+          }
+          
+          return {
+            x: prevPoint.x + (newPoint.x - prevPoint.x) * easeOutCubic,
+            y: prevPoint.y + (newPoint.y - prevPoint.y) * easeOutCubic,
+            z: prevPoint.z + (newPoint.z - prevPoint.z) * easeOutCubic,
+            color: newPoint.color,
+            id: newPoint.id
+          };
+        });
+        
+        // Trigger re-render to update canvas
+        setAnimationTick(prev => prev + 1);
+        
+        // Continue animation if not complete
+        if (progress < 1) {
+          animationFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          // Animation complete, set to final positions
+          animatedPointsRef.current = points.map(p => ({ ...p }));
+          animationStartTimeRef.current = null;
+        }
+      };
+      
+      animationFrameRef.current = requestAnimationFrame(animate);
+    } else {
+      // No previous points or no change, set immediately
+      animatedPointsRef.current = points.map(p => ({ ...p }));
+    }
+    
+    // Update previous points for next animation
+    previousPointsRef.current = points.map(p => ({ ...p }));
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [points]);
 
   // Draw function and Event Listeners
   useEffect(() => {
@@ -213,8 +332,8 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
     }
     ctx.stroke();
 
-    // 2. Draw Points with contrasting colors and outline
-    points.forEach(pt => {
+    // 2. Draw Points with contrasting colors and outline (using animated positions)
+    animatedPointsRef.current.forEach(pt => {
         const p = transform(pt.x, pt.y, pt.z);
         const radius = 3 * Math.sqrt(zoom);
         ctx.beginPath();
@@ -237,7 +356,7 @@ const ThreeDScatter: React.FC<Props> = ({ points, range, title, functionType = '
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [points, range, rotation, zoom, pan, functionType]);
+  }, [points, range, rotation, zoom, pan, functionType, animationTick]);
 
   // Native wheel listener to prevent default scroll
   useEffect(() => {
